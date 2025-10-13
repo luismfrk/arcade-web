@@ -35,7 +35,7 @@ const SnakeGame = (()=>{
       }
     });
 
-    ctx.strokeStyle="rgba(255,255,255,.04)";
+    ctx.strokeStyle="rgba(248, 220, 63, 1)";
     ctx.lineWidth=1;
     for(let x=grid; x<w; x+=grid){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
     for(let y=grid; y<h; y+=grid){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
@@ -80,12 +80,34 @@ const SnakeGame = (()=>{
     reset(); draw();
     window.addEventListener("keydown",key);
     loopId = setInterval(step, 90);
+    addTouchControls(cv);
     return stop;
   }
 
   function stop(){
     clearInterval(loopId);
     window.removeEventListener("keydown",key);
+  }
+
+  function addTouchControls(cv) {
+    let startX=0, startY=0;
+    cv.addEventListener("touchstart", e=>{
+      const t=e.touches[0];
+      startX=t.clientX; startY=t.clientY;
+    });
+    cv.addEventListener("touchmove", e=>{
+      const t=e.touches[0];
+      const dx=t.clientX - startX;
+      const dy=t.clientY - startY;
+      if(Math.abs(dx)>Math.abs(dy)){
+        if(dx>20 && dir.x!==-1){ dir={x:1,y:0}; }
+        else if(dx<-20 && dir.x!==1){ dir={x:-1,y:0}; }
+      } else {
+        if(dy>20 && dir.y!==-1){ dir={x:0,y:1}; }
+        else if(dy<-20 && dir.y!==1){ dir={x:0,y:-1}; }
+      }
+      startX=t.clientX; startY=t.clientY;
+    });
   }
 
   return { start, stop };

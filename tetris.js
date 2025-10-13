@@ -112,8 +112,8 @@ const TetrisGame = (()=>{
   }
   function gameOver(){
     beep(220,0.25,"sawtooth",0.05);
-    stop();
-    stopCb?.(score);
+    stop(); stopCb?.(score);
+    removeTouchButtons();
   }
   function start(onStop,onScore,beepFn){
     grid = newGrid(); piece=randomPiece(); score=0; running=true;
@@ -126,12 +126,77 @@ const TetrisGame = (()=>{
       clearInterval(timer);
       timer = setInterval(()=>{ drop(); }, nextTick);
     }, nextTick);
+    addTouchButtons();
     return stop;
   }
   function stop(){
     running=false;
     window.removeEventListener("keydown",key);
     clearInterval(timer);
+    removeTouchButtons();
   }
+
+  function addTouchButtons(){
+    if(document.getElementById("touch-controls")) return;
+    const wrap = document.createElement("div");
+    wrap.id="touch-controls";
+    wrap.innerHTML = `
+      <div class="touch-controls">
+        <button data-act="left">←</button>
+        <button data-act="rotate">⟳</button>
+        <button data-act="right">→</button>
+      </div>
+      <div class="touch-controls bottom">
+        <button data-act="down">↓</button>
+        <button data-act="drop">⤓</button>
+      </div>
+    `;
+    document.body.appendChild(wrap);
+    wrap.querySelectorAll("button").forEach(btn=>{
+      btn.addEventListener("click",()=>{
+        const act = btn.dataset.act;
+        if(!running) return;
+        if(act==="left" && !collide(grid,{...piece,x:piece.x-1})) piece.x--;
+        else if(act==="right" && !collide(grid,{...piece,x:piece.x+1})) piece.x++;
+        else if(act==="rotate"){
+          const rot = rotate(piece.m);
+          if(!collide(grid,{...piece,m:rot})) piece.m = rot;
+        }
+        else if(act==="down") drop();
+        else if(act==="drop") hardDrop();
+        draw();
+      });
+    });
+  }
+  function removeTouchButtons(){
+    const el=document.getElementById("touch-controls");
+    if(el) el.remove();
+  }
+  const style = document.createElement("style");
+  style.textContent = `
+  .touch-controls{
+    position:fixed;
+    bottom:80px;
+    left:50%;
+    transform:translateX(-50%);
+    display:flex;
+    gap:10px;
+    z-index:9999;
+  }
+  .touch-controls.bottom{ bottom:20px; }
+  .touch-controls button{
+    background:#00e0a4;
+    border:none;
+    color:#042418;
+    font-size:1.4rem;
+    border-radius:12px;
+    width:64px;height:64px;
+    font-weight:bold;
+    box-shadow:0 4px 10px rgba(0,0,0,.3);
+  }
+  @media(min-width:700px){ .touch-controls{display:none!important;} }
+  `;
+  document.head.appendChild(style);
+
   return { start, stop };
 })();
