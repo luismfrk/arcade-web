@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Arcade Web — Snake • Pong • Tetris</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>🎮 Arcade Web</h1>
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-target="snake" role="tab" aria-selected="true">🐍 Snake</button>
+      <button class="tab" data-target="pong" role="tab">🏓 Pong</button>
+      <button class="tab" data-target="tetris" role="tab">🧱 Tetris</button>
+    </nav>
+  </header>
+
+  <main class="content">
+    <aside class="sidebar">
+      <section class="card">
+        <h3>Placar</h3>
+        <p id="score">0</p>
+      </section>
+      <section class="card">
+        <h3>Recorde</h3>
+        <p id="highScore">0</p>
+        <button id="resetHS" class="btn small">Zerar recordes</button>
+      </section>
+      <section class="card">
+        <h3>Controles</h3>
+        <div id="controls" class="controls"></div>
+      </section>
+      <section class="card">
+        <h3>Som</h3>
+        <label class="switch">
+          <input id="soundToggle" type="checkbox" checked />
+          <span class="slider"></span>
+        </label>
+      </section>
+    </aside>
+
+    <section class="canvas-wrap">
+      <canvas id="snake" width="480" height="480"></canvas>
+      <canvas id="pong" width="640" height="360" hidden></canvas>
+      <canvas id="tetris" width="240" height="480" hidden></canvas>
+      <div id="hint" class="hint">Toque no canvas para iniciar / pausar</div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>Desenvolvido por @luis.mfrk</span>
+  </footer>
+
+  <script src="app.js"></script>
+  <script src="snake.js"></script>
+  <script src="pong.js"></script>
+  <script src="tetris.js"></script>
+</body>
+</html>
