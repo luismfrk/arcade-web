@@ -1,3 +1,4 @@
+/* Tema Neon Minimalista — versão desktop */
 
 body {
   background: radial-gradient(circle at 30% 30%, #0b1530 0%, #060b18 80%);
@@ -5,7 +6,6 @@ body {
   color: #f5faff;
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
 }
 
 .topbar {
@@ -41,10 +41,6 @@ body {
   box-shadow: 0 0 12px #00e0a4;
 }
 
-.tab:hover {
-  background: rgba(255,255,255,0.2);
-}
-
 .canvas-wrap {
   display: flex;
   justify-content: center;
@@ -68,54 +64,6 @@ canvas {
   padding: 10px 16px;
   border-radius: 10px;
   margin: 8px 0;
-}
-
-/* === BOTÕES TOUCH NEON === */
-
-.touch-controls {
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 14px;
-  z-index: 9999;
-  pointer-events: auto;
-}
-
-.touch-controls.bottom {
-  bottom: 20px;
-}
-
-.touch-controls:not(.bottom) {
-  bottom: 100px;
-}
-
-.touch-controls button {
-  background: linear-gradient(145deg, #00e0a4, #0074ff);
-  border: none;
-  color: #fff;
-  font-size: 1.6rem;
-  border-radius: 18px;
-  width: 70px;
-  height: 70px;
-  font-weight: bold;
-  box-shadow:
-    0 0 10px rgba(0,255,200,0.4),
-    0 0 25px rgba(0,255,255,0.2),
-    inset 0 0 10px rgba(0,255,200,0.3);
-  text-shadow: 0 0 8px rgba(0,0,0,0.6);
-  transition: all 0.2s ease;
-}
-
-.touch-controls button:active {
-  transform: scale(0.92);
-  box-shadow:
-    0 0 15px rgba(0,255,200,0.8),
-    inset 0 0 8px rgba(0,255,255,0.5);
-}
-
-@media (min-width: 700px) {
-  .touch-controls { display: none !important; }
 }
 
 .footer {

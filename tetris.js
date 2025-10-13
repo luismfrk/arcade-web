@@ -3,13 +3,9 @@ const TetrisGame = (()=>{
   let ctx, grid, piece, nextTick, score, stopCb, scoreCb, beep, timer, running;
 
   const SHAPES = {
-    I:[[1,1,1,1]],
-    O:[[1,1],[1,1]],
-    T:[[0,1,0],[1,1,1]],
-    S:[[0,1,1],[1,1,0]],
-    Z:[[1,1,0],[0,1,1]],
-    J:[[1,0,0],[1,1,1]],
-    L:[[0,0,1],[1,1,1]],
+    I:[[1,1,1,1]], O:[[1,1],[1,1]], T:[[0,1,0],[1,1,1]],
+    S:[[0,1,1],[1,1,0]], Z:[[1,1,0],[0,1,1]],
+    J:[[1,0,0],[1,1,1]], L:[[0,0,1],[1,1,1]]
   };
   const COLORS = { I:"#20e3ff", O:"#ffd300", T:"#c77dff", S:"#00e0a4", Z:"#ff5d73", J:"#5cb6ff", L:"#ffa94d" };
 
@@ -46,58 +42,35 @@ const TetrisGame = (()=>{
     let cleared=0;
     for(let y=H-1;y>=0;y--){
       if(grid[y].every(v=>v!==0)){
-        grid.splice(y,1);
-        grid.unshift(Array(W).fill(0));
+        grid.splice(y,1); grid.unshift(Array(W).fill(0));
         cleared++; y++;
       }
     }
     if(cleared){
-      score += 100*cleared;
-      scoreCb?.(score);
+      score += 100*cleared; scoreCb?.(score);
       beep(900,0.05,"triangle",0.06);
-      beep(1100,0.06,"triangle",0.06);
     }
   }
-  function drawCell(x,y,color){
-    ctx.fillStyle = color;
-    ctx.fillRect(x*SCALE, y*SCALE, SCALE, SCALE);
-    ctx.strokeStyle="rgba(255,255,255,.12)";
-    ctx.strokeRect(x*SCALE, y*SCALE, SCALE, SCALE);
-  }
   function draw(){
-    const cv = document.getElementById("tetris");
-    ctx = cv.getContext("2d");
+    const cv=document.getElementById("tetris");
+    ctx=cv.getContext("2d");
     ctx.fillStyle="#0b1530"; ctx.fillRect(0,0,cv.width,cv.height);
-
-    ctx.strokeStyle="rgba(255,255,255,.05)";
-    for(let x=0;x<=W;x++){ ctx.beginPath(); ctx.moveTo(x*SCALE,0); ctx.lineTo(x*SCALE,H*SCALE); ctx.stroke(); }
-    for(let y=0;y<=H;y++){ ctx.beginPath(); ctx.moveTo(0,y*SCALE); ctx.lineTo(W*SCALE,y*SCALE); ctx.stroke(); }
-
-    for(let y=0;y<H;y++)
-      for(let x=0;x<W;x++)
-        if(grid[y][x]) drawCell(x,y,grid[y][x]);
-
-    for(let r=0;r<piece.m.length;r++)
-      for(let c=0;c<piece.m[0].length;c++)
-        if(piece.m[r][c]) drawCell(piece.x+c,piece.y+r,piece.c);
+    for(let y=0;y<H;y++) for(let x=0;x<W;x++) if(grid[y][x]) drawCell(x,y,grid[y][x]);
+    for(let r=0;r<piece.m.length;r++) for(let c=0;c<piece.m[0].length;c++)
+      if(piece.m[r][c]) drawCell(piece.x+c,piece.y+r,piece.c);
+  }
+  function drawCell(x,y,color){
+    ctx.fillStyle=color; ctx.fillRect(x*SCALE,y*SCALE,SCALE,SCALE);
+    ctx.strokeStyle="rgba(255,255,255,.12)";
+    ctx.strokeRect(x*SCALE,y*SCALE,SCALE,SCALE);
   }
   function drop(){
     piece.y++;
     if(collide(grid,piece)){
-      piece.y--;
-      merge(grid,piece);
-      clearLines();
-      piece = randomPiece();
-      if(collide(grid,piece)){ gameOver(); return; }
-      beep(520,0.04,"square",0.04);
+      piece.y--; merge(grid,piece); clearLines();
+      piece=randomPiece(); if(collide(grid,piece)){ gameOver(); return; }
     }
     draw();
-  }
-  function hardDrop(){
-    let moved=false;
-    while(!collide(grid,{...piece,y:piece.y+1})) { piece.y++; moved=true; }
-    if(moved) beep(650,0.05,"triangle",0.06);
-    drop();
   }
   function key(e){
     if(!running) return;
@@ -105,98 +78,19 @@ const TetrisGame = (()=>{
     else if(e.key==="ArrowRight"&& !collide(grid,{...piece,x:piece.x+1})) piece.x++;
     else if(e.key==="ArrowDown") drop();
     else if(e.key==="ArrowUp"){
-      const rot = rotate(piece.m);
-      if(!collide(grid,{...piece,m:rot})) piece.m = rot;
-    } else if(e.key===" "){ hardDrop(); }
+      const rot=rotate(piece.m);
+      if(!collide(grid,{...piece,m:rot})) piece.m=rot;
+    } else if(e.key===" "){ while(!collide(grid,{...piece,y:piece.y+1})) piece.y++; drop(); }
     draw();
   }
-  function gameOver(){
-    beep(220,0.25,"sawtooth",0.05);
-    stop(); stopCb?.(score);
-    removeTouchButtons();
-  }
+  function gameOver(){ beep(220,0.25,"sawtooth",0.05); stop(); stopCb?.(score); }
   function start(onStop,onScore,beepFn){
-    grid = newGrid(); piece=randomPiece(); score=0; running=true;
+    grid=newGrid(); piece=randomPiece(); score=0; running=true;
     stopCb=onStop; scoreCb=onScore; beep=beepFn;
-    draw(); nextTick = 700;
-    window.addEventListener("keydown",key);
-    timer = setInterval(()=>{
-      drop();
-      if(nextTick>200) nextTick -= 4;
-      clearInterval(timer);
-      timer = setInterval(()=>{ drop(); }, nextTick);
-    }, nextTick);
-    addTouchButtons();
-    return stop;
+    draw(); window.addEventListener("keydown",key);
+    timer=setInterval(drop,600); return stop;
   }
-  function stop(){
-    running=false;
-    window.removeEventListener("keydown",key);
-    clearInterval(timer);
-    removeTouchButtons();
-  }
-
-  function addTouchButtons(){
-    if(document.getElementById("touch-controls")) return;
-    const wrap = document.createElement("div");
-    wrap.id="touch-controls";
-    wrap.innerHTML = `
-      <div class="touch-controls">
-        <button data-act="left">←</button>
-        <button data-act="rotate">⟳</button>
-        <button data-act="right">→</button>
-      </div>
-      <div class="touch-controls bottom">
-        <button data-act="down">↓</button>
-        <button data-act="drop">⤓</button>
-      </div>
-    `;
-    document.body.appendChild(wrap);
-    wrap.querySelectorAll("button").forEach(btn=>{
-      btn.addEventListener("click",()=>{
-        const act = btn.dataset.act;
-        if(!running) return;
-        if(act==="left" && !collide(grid,{...piece,x:piece.x-1})) piece.x--;
-        else if(act==="right" && !collide(grid,{...piece,x:piece.x+1})) piece.x++;
-        else if(act==="rotate"){
-          const rot = rotate(piece.m);
-          if(!collide(grid,{...piece,m:rot})) piece.m = rot;
-        }
-        else if(act==="down") drop();
-        else if(act==="drop") hardDrop();
-        draw();
-      });
-    });
-  }
-  function removeTouchButtons(){
-    const el=document.getElementById("touch-controls");
-    if(el) el.remove();
-  }
-  const style = document.createElement("style");
-  style.textContent = `
-  .touch-controls{
-    position:fixed;
-    bottom:80px;
-    left:50%;
-    transform:translateX(-50%);
-    display:flex;
-    gap:10px;
-    z-index:9999;
-  }
-  .touch-controls.bottom{ bottom:20px; }
-  .touch-controls button{
-    background:#00e0a4;
-    border:none;
-    color:#042418;
-    font-size:1.4rem;
-    border-radius:12px;
-    width:64px;height:64px;
-    font-weight:bold;
-    box-shadow:0 4px 10px rgba(0,0,0,.3);
-  }
-  @media(min-width:700px){ .touch-controls{display:none!important;} }
-  `;
-  document.head.appendChild(style);
+  function stop(){ running=false; window.removeEventListener("keydown",key); clearInterval(timer); }
 
   return { start, stop };
 })();
