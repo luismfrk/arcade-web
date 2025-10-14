@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Arcade Web — Snake • Pong • Tetris</title>
+  <title>Arcade Web — Snake • Pong • Tetris • Mario</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -13,6 +13,7 @@
       <button class="tab active" data-target="snake" role="tab" aria-selected="true">🐍 Snake</button>
       <button class="tab" data-target="pong" role="tab">🏓 Pong</button>
       <button class="tab" data-target="tetris" role="tab">🧱 Tetris</button>
+      <button class="tab" data-target="mario" role="tab">🍄 Mario</button>
     </nav>
   </header>
 
@@ -29,7 +30,7 @@
       </section>
       <section class="card">
         <h3>Controles</h3>
-        <div id="controls" class="controls"></div>
+        <p>Use as setas ⬅️⬆️➡️ e espaço</p>
       </section>
       <section class="card">
         <h3>Som</h3>
@@ -44,6 +45,7 @@
       <canvas id="snake" width="480" height="480"></canvas>
       <canvas id="pong" width="640" height="360" hidden></canvas>
       <canvas id="tetris" width="240" height="480" hidden></canvas>
+      <canvas id="mario" width="640" height="360" hidden></canvas>
       <div id="hint" class="hint">Pressione qualquer tecla para jogar</div>
     </section>
   </main>
@@ -56,5 +58,6 @@
   <script src="snake.js"></script>
   <script src="pong.js"></script>
   <script src="tetris.js"></script>
+  <script src="mario.js"></script>
 </body>
 </html>

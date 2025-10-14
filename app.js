@@ -1,108 +1,65 @@
-const tabs = document.querySelectorAll(".tab");
-const canvases = {
-  snake: document.getElementById("snake"),
-  pong:  document.getElementById("pong"),
-  tetris:document.getElementById("tetris"),
-};
+// Controla os jogos e o som
+let currentGame = null;
+let score = 0;
+let highScore = parseInt(localStorage.getItem("arcadeHS") || "0");
 const scoreEl = document.getElementById("score");
-const highEl  = document.getElementById("highScore");
-const resetHS = document.getElementById("resetHS");
-const controlsEl = document.getElementById("controls");
-const soundToggle = document.getElementById("soundToggle");
+const hsEl = document.getElementById("highScore");
+hsEl.textContent = highScore;
 
-const AC = window.AudioContext || window.webkitAudioContext;
-const audioCtx = new AC();
-let soundOn = true;
-soundToggle.addEventListener("change", e => soundOn = e.target.checked);
-
-function beep(freq=440, dur=0.07, type="square", gain=0.05){
-  if(!soundOn) return;
-  const o = audioCtx.createOscillator();
-  const g = audioCtx.createGain();
-  o.type = type; o.frequency.value = freq;
-  g.gain.value = gain;
-  o.connect(g); g.connect(audioCtx.destination);
-  o.start(); o.stop(audioCtx.currentTime + dur);
+function beep(freq, dur, type = "square", vol = 0.05) {
+  if (!document.getElementById("soundToggle").checked) return;
+  const ctx = new AudioContext();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  gain.gain.value = vol;
+  osc.start();
+  osc.stop(ctx.currentTime + dur);
 }
 
-function getKey(game){ return `arcade_hs_${game}`; }
-function getHS(game){ return +(localStorage.getItem(getKey(game)) || 0); }
-function setHS(game, v){ localStorage.setItem(getKey(game), String(v)); }
-
-let currentGame = "snake";
-function updateScoreUI(score=0){
+function updateScore(s) {
+  score = s;
   scoreEl.textContent = score;
-  highEl.textContent  = getHS(currentGame);
-}
-resetHS.onclick = () => {
-  ["snake","pong","tetris"].forEach(g => localStorage.removeItem(getKey(g)));
-  updateScoreUI(0);
-};
-
-tabs.forEach(tab=>{
-  tab.onclick=()=>{
-    tabs.forEach(t=>t.classList.remove("active"));
-    tab.classList.add("active");
-    Object.values(canvases).forEach(c=>c.hidden=true);
-    const id = tab.dataset.target;
-    currentGame = id;
-    canvases[id].hidden=false;
-    stopAll();
-    startGame(id);
-  };
-});
-
-const help = {
-  snake: `
-    <div><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></div>
-    <small>Toque/arraste no mobile.</small>
-  `,
-  pong: `
-    <div><kbd>W</kbd>/<kbd>S</kbd> (Esq) &nbsp; • &nbsp; <kbd>↑</kbd>/<kbd>↓</kbd> (Dir)</div>
-    <small>1 jogador vs CPU.</small>
-  `,
-  tetris: `
-    <div><kbd>←</kbd> <kbd>→</kbd> mover • <kbd>↑</kbd> girar • <kbd>↓</kbd> cair</div>
-    <small>Espaço: queda rápida</small>
-  `
-};
-function setControls(game){ controlsEl.innerHTML = help[game]; }
-
-let stopFns = {};
-function startGame(id){
-  updateScoreUI(0);
-  setControls(id);
-  const onScore = (s)=>{
-    updateScoreUI(s);
-    if(s>getHS(id)){ setHS(id,s); updateScoreUI(s); }
-  };
-  const onStop = (finalScore)=> {
-    if(finalScore>getHS(id)){ setHS(id,finalScore); }
-    updateScoreUI(finalScore);
-  };
-  if(id==="snake") stopFns.snake = SnakeGame.start(onStop,onScore,beep);
-  if(id==="pong")  stopFns.pong  = PongGame.start(onStop,onScore,beep);
-  if(id==="tetris")stopFns.tetris= TetrisGame.start(onStop,onScore,beep);
-}
-function stopAll(){
-  Object.values(stopFns).forEach(fn=>fn && fn());
-  stopFns = {};
+  if (score > highScore) {
+    highScore = score;
+    hsEl.textContent = highScore;
+    localStorage.setItem("arcadeHS", highScore);
+  }
 }
 
-canvases.snake.hidden=false;
-setControls("snake");
-updateScoreUI(0);
-startGame("snake");
+function stopGame() {
+  if (currentGame) currentGame.stop();
+  currentGame = null;
+}
 
-document.querySelectorAll("canvas").forEach(cv=>{
-  let paused=false;
-  cv.addEventListener("pointerdown", ()=>{
-    const game = currentGame;
-    if(!stopFns[game]) return;
-    if(!paused){
-      stopFns[game](); paused=true; stopFns[game]=null;
-    }else{
-      startGame(game); paused=false;
-    }
+function startGame(id) {
+  stopGame();
+  document.querySelectorAll("canvas").forEach(c => c.hidden = true);
+  document.getElementById(id).hidden = false;
+  const game = { snake: SnakeGame, pong: PongGame, tetris: TetrisGame, mario: MarioGame }[id];
+  currentGame = game;
+  score = 0;
+  scoreEl.textContent = "0";
+  game.start(stopGame, updateScore, beep);
+}
+
+// alterna abas
+document.querySelectorAll(".tab").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    startGame(btn.dataset.target);
   });
 });
+
+// reset recorde
+document.getElementById("resetHS").onclick = () => {
+  localStorage.removeItem("arcadeHS");
+  hsEl.textContent = "0";
+};
+
+// inicia com Snake
+startGame("snake");
