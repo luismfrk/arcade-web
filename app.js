@@ -1,4 +1,4 @@
-// Controla os jogos e o som
+
 let currentGame = null;
 let score = 0;
 let highScore = parseInt(localStorage.getItem("arcadeHS") || "0");
@@ -46,7 +46,7 @@ function startGame(id) {
   game.start(stopGame, updateScore, beep);
 }
 
-// alterna abas
+
 document.querySelectorAll(".tab").forEach(btn => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
@@ -55,11 +55,11 @@ document.querySelectorAll(".tab").forEach(btn => {
   });
 });
 
-// reset recorde
+
 document.getElementById("resetHS").onclick = () => {
   localStorage.removeItem("arcadeHS");
   hsEl.textContent = "0";
 };
 
-// inicia com Snake
+
 startGame("snake");
